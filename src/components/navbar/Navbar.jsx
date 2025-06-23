@@ -1,69 +1,237 @@
-import { useState } from 'react'
+import { useState } from "react";
+import chateaLogo from "../../assets/chatea.png";
+import userLogo from "../../assets/user.png";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
 
   return (
-    <nav className="relative bg-white shadow">
-      <div className="container px-6 py-4 mx-auto">
-        <div className="lg:flex lg:items-center lg:justify-between">
-          <div className="flex items-center justify-between">
-            <a href="#">
-              <img className="w-auto h-6 sm:h-7" src="https://merakiui.com/images/full-logo.svg" alt="Logo" />
-            </a>
+    <>
+      <nav className="bg-white border-gray-200 shadow-sm">
+        <div className="max-w-6xl mx-auto flex items-center justify-between p-4 relative">
+          <a href="#" className="flex items-center space-x-3">
+            <img
+              src={chateaLogo}
+              className="h-10 max-sm:h-8"
+              alt="Chatea Logo"
+            />
+          </a>
 
-            {/* Mobile menu button */}
-            <div className="flex lg:hidden">
-              <button 
-                onClick={() => setIsOpen(!isOpen)} 
-                type="button" 
-                className="text-gray-500 hover:text-gray-600 focus:outline-none focus:text-gray-600" 
-                aria-label="toggle menu"
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            <button
+              type="button"
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium transition cursor-pointer text-white bg-[#009eec] rounded-lg hover:bg-[#007bb8] focus:ring-1 focus:ring-blue-300"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                {!isOpen ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                )}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              <span>Recargar minutos</span>
+            </button>
+
+            {/* Menú de usuario */}
+            <div className="relative">
+              <button
+                type="button"
+                className="flex text-sm rounded-full border-0 focus:ring-1 cursor-pointer focus:ring-blue-300"
+                onClick={toggleUserMenu}
+                aria-expanded={isUserMenuOpen}
+              >
+                <img
+                  className="w-10 h-10 rounded-full"
+                  src={userLogo}
+                  alt="user photo"
+                />
               </button>
+
+              {/* Dropdown menu */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 z-50 w-48 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-lg border border-gray-200">
+                  <div className="px-4 py-3">
+                    <span className="block text-sm text-gray-900">
+                      Gonzalo Salazar
+                    </span>
+                    <span className="block text-sm text-gray-500 truncate">
+                      gonza@gmail.com
+                    </span>
+                  </div>
+                  <ul className="py-2">
+                    <li>
+                      <a
+                        href="#"
+                        className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        Cerrar sesión
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Mobile Menu */}
-          <div className={`absolute inset-x-0 z-20 w-full px-6 py-4 transition-all duration-300 ease-in-out bg-white lg:mt-0 lg:p-0 lg:top-0 lg:relative lg:bg-transparent lg:w-auto lg:opacity-100 lg:translate-x-0 lg:flex lg:items-center ${
-            isOpen ? 'translate-x-0 opacity-100' : 'opacity-0 -translate-x-full'
-          }`}>
-            <div className="flex flex-col -mx-6 lg:flex-row lg:items-center lg:mx-8">
-              <a href="#" className="px-3 py-2 mx-3 mt-2 text-gray-700 transition-colors duration-300 transform rounded-md lg:mt-0 hover:bg-gray-100">Join Slack</a>
-              <a href="#" className="px-3 py-2 mx-3 mt-2 text-gray-700 transition-colors duration-300 transform rounded-md lg:mt-0 hover:bg-gray-100">Browse Topics</a>
-              <a href="#" className="px-3 py-2 mx-3 mt-2 text-gray-700 transition-colors duration-300 transform rounded-md lg:mt-0 hover:bg-gray-100">Random Item</a>
-              <a href="#" className="px-3 py-2 mx-3 mt-2 text-gray-700 transition-colors duration-300 transform rounded-md lg:mt-0 hover:bg-gray-100">Experts</a>
-            </div>
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            className="md:hidden inline-flex items-center p-2 w-10 h-10 justify-center text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            onClick={toggleMobileMenu}
+            aria-expanded={isMobileMenuOpen}
+          >
+            <span className="sr-only">Abrir menú principal</span>
+            <svg
+              className="w-5 h-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 17 14"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M1 1h15M1 7h15M1 13h15"
+              />
+            </svg>
+          </button>
+        </div>
+      </nav>
 
-            <div className="flex items-center mt-4 lg:mt-0">
-              <button className="hidden mx-4 text-gray-600 transition-colors duration-300 transform lg:block hover:text-gray-700 focus:text-gray-700 focus:outline-none" aria-label="show notifications">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M15 17H20L18.5951 15.5951C18.2141 15.2141 18 14.6973 18 14.1585V11C18 8.38757 16.3304 6.16509 14 5.34142V5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5V5.34142C7.66962 6.16509 6 8.38757 6 11V14.1585C6 14.6973 5.78595 15.2141 5.40493 15.5951L4 17H9M15 17V18C15 19.6569 13.6569 21 12 21C10.3431 21 9 19.6569 9 18V17M15 17H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.1)",
+            backdropFilter: "blur(2px)",
+            WebkitBackdropFilter: "blur(2px)",
+          }}
+          onClick={closeMobileMenu}
+        ></div>
+      )}
 
-              <button type="button" className="flex items-center focus:outline-none" aria-label="toggle profile dropdown">
-                <div className="w-8 h-8 overflow-hidden border-2 border-gray-400 rounded-full">
-                  <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80" className="object-cover w-full h-full" alt="avatar" />
+      {/* Mobile Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header del sidebar */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <img src={chateaLogo} className="h-8" alt="Chatea Logo" />
+            <button
+              type="button"
+              className="text-gray-400 hover:text-gray-600 p-2"
+              onClick={closeMobileMenu}
+            >
+              <span className="sr-only">Cerrar menú</span>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Contenido del sidebar */}
+          <div className="flex-1 flex flex-col p-4">
+            <div className="flex items-center space-x-3 mb-6">
+              <img
+                className="w-12 h-12 rounded-full"
+                src={userLogo}
+                alt="user photo"
+              />
+              <div>
+                <div className="text-sm font-medium text-gray-900">
+                  Gonzalo Salazar
                 </div>
-
-                <h3 className="mx-2 text-gray-700 lg:hidden">Khatab wedaa</h3>
-              </button>
+                <div className="text-sm text-gray-500">gonza@gmail.com</div>
+              </div>
             </div>
+
+            <button
+              type="button"
+              className="flex items-center justify-center space-x-2 w-full px-4 py-3 text-sm font-medium transition cursor-pointer text-white bg-[#009eec] rounded-lg hover:bg-[#007bb8] focus:ring-1 focus:ring-blue-300 mb-6"
+              onClick={closeMobileMenu}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              <span>Recargar minutos</span>
+            </button>
+
+            <div className="flex-1"></div>
+
+            {/* Botón Cerrar sesión */}
+            <button
+              type="button"
+              className="flex items-center space-x-2 w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              onClick={closeMobileMenu}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              <span>Cerrar sesión</span>
+            </button>
           </div>
         </div>
       </div>
-    </nav>
-  )
-}
+    </>
+  );
+};
 
-export default Navbar
+export default Navbar;

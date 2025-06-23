@@ -1,0 +1,105 @@
+.date-range-filter {
+  position: relative;
+  text-align: center;
+  width: 230px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @media screen and (max-width: 768px) {
+    & {
+      width: 100%;
+    }
+  }
+
+  &__calendar-icon {
+    color: #009ee3;
+    font-size: 25px;
+  }
+
+  &__input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 14px;
+    border: 1px solid #009ee3;
+    border-radius: 4px;
+    width: 100% !important;
+    transition: all 0.3s ease;
+
+    @media screen and (max-width: 800px) {
+      & {
+        width: 100%;
+      }
+    }
+
+    &:hover {
+      background-color: #edf4ff;
+    }
+  }
+
+  &__calendar-popup {
+    position: absolute;
+    top: 110%;
+    z-index: 1000;
+    margin-top: 4px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+
+    calendar-range {
+      &::part(previous) {
+        font-size: 16px;
+        padding: 4px 8px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #edf4ff;
+        color: #009ee3;
+        &:hover {
+          transform: translateY(-2px);
+          background-color: #d6e8ff;
+        }
+      }
+
+      &::part(next) {
+        font-size: 16px;
+        padding: 4px 8px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #edf4ff;
+        color: #009ee3;
+        &:hover {
+          transform: translateY(-2px);
+          background-color: #d6e8ff;
+        }
+      }
+
+      .previous-icon {
+        color: #009ee3;
+        font-size: 25px;
+      }
+      .next-icon {
+        color: #009ee3;
+        font-size: 25px;
+      }
+    }
+
+    calendar-month {
+      --color-accent: #009ee3;
+      &::part(range-inner) {
+        background-color: #d6e8ff;
+        color: #000;
+      }
+    }
+  }
+}
