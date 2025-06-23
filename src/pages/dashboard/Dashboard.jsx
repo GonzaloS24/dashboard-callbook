@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DateRangeFilter from "../../components/dateRange/DateRangeFilter";
 import MinutesChart from "../../components/charts/MinuteChart";
+import CallHistory from "../../components/callHistory/CallHistory";
 
 const Dashboard = () => {
   const [totalMinutes, setTotalMinutes] = useState(0);
@@ -26,7 +27,8 @@ const Dashboard = () => {
           Dashboard de minutos
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:items-stretch">
+        {/* Sección superior con métricas y gráfico */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:items-stretch mb-8">
           {/* Columna izquierda */}
           <div className="lg:col-span-1 flex flex-col space-y-6 lg:h-full">
             {/* Minutos disponibles */}
@@ -84,6 +86,11 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* historial de llamadas */}
+        <div className="w-full">
+          <CallHistory />
         </div>
       </div>
     </div>
