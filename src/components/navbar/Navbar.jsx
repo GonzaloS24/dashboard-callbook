@@ -1,10 +1,12 @@
 import { useState } from "react";
 import chateaLogo from "../../assets/chatea.png";
 import userLogo from "../../assets/user.png";
+import RechargePopup from "../rechargePopup/RechargePopup";
 
 const Navbar = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isRechargePopupOpen, setIsRechargePopupOpen] = useState(false);
 
   const toggleUserMenu = () => {
     setIsUserMenuOpen(!isUserMenuOpen);
@@ -16,6 +18,15 @@ const Navbar = () => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const openRechargePopup = () => {
+    setIsRechargePopupOpen(true);
+    setIsMobileMenuOpen(false);
+  };
+
+  const closeRechargePopup = () => {
+    setIsRechargePopupOpen(false);
   };
 
   return (
@@ -34,6 +45,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <button
               type="button"
+              onClick={openRechargePopup}
               className="flex items-center space-x-2 px-4 py-2 text-sm font-medium transition cursor-pointer text-white bg-[#009eec] rounded-lg hover:bg-[#007bb8] focus:ring-1 focus:ring-blue-300"
             >
               <svg
@@ -184,8 +196,8 @@ const Navbar = () => {
 
             <button
               type="button"
+              onClick={openRechargePopup}
               className="flex items-center justify-center space-x-2 w-full px-4 py-3 text-sm font-medium transition cursor-pointer text-white bg-[#009eec] rounded-lg hover:bg-[#007bb8] focus:ring-1 focus:ring-blue-300 mb-6"
-              onClick={closeMobileMenu}
             >
               <svg
                 className="w-4 h-4"
@@ -222,7 +234,7 @@ const Navbar = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1"
                 />
               </svg>
               <span>Cerrar sesión</span>
@@ -230,6 +242,12 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* Popup de recarga */}
+      <RechargePopup
+        isOpen={isRechargePopupOpen}
+        onClose={closeRechargePopup}
+      />
     </>
   );
 };
