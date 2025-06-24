@@ -21,7 +21,7 @@ const Navbar = () => {
   return (
     <>
       <nav className="bg-white border-gray-200 shadow-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between p-4 relative">
+        <div className="max-w-7xl mx-auto flex items-center justify-between p-4 relative">
           <a href="#" className="flex items-center space-x-3">
             <img
               src={chateaLogo}
