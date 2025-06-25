@@ -3,7 +3,7 @@ import { useState } from "react";
 const RechargePopup = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     minutes: "1",
-    promo_code: ""
+    promo_code: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -21,16 +21,16 @@ const RechargePopup = ({ isOpen, onClose }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const dataToSend = {
         workspace_id: WORKSPACE_ID,
@@ -38,21 +38,20 @@ const RechargePopup = ({ isOpen, onClose }) => {
         amount: totalAmount,
         currency: CURRENCY,
         method: METHOD,
-        promo_code: formData.promo_code || undefined
+        promo_code: formData.promo_code || undefined,
       };
 
       console.log("Datos de recarga:", dataToSend);
-      
+
       // Simular delay de la API
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       onClose();
-      
+
       // Reset form
       setFormData({
         minutes: "1",
-        promo_code: ""
+        promo_code: "",
       });
-      
     } catch (error) {
       console.error("Error al recargar minutos:", error);
     } finally {
@@ -63,7 +62,7 @@ const RechargePopup = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{
         backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -72,15 +71,13 @@ const RechargePopup = ({ isOpen, onClose }) => {
       }}
       onClick={onClose}
     >
-      <div 
+      <div
         className="w-full max-w-md mx-auto bg-white p-6 rounded-2xl  shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-600">
-            Recargar minutos
-          </h2>
+          <h2 className="text-xl font-bold text-gray-600">Recargar minutos</h2>
           <button
             type="button"
             onClick={onClose}
@@ -131,24 +128,30 @@ const RechargePopup = ({ isOpen, onClose }) => {
               <h3 className="text-sm font-semibold text-gray-700 mb-3">
                 Resumen de compra
               </h3>
-              
+
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Minutos a comprar:</span>
+                <span className="text-sm text-gray-600">
+                  Minutos a comprar:
+                </span>
                 <span className="text-sm font-medium text-gray-900">
                   {minutes.toLocaleString()} minutos
                 </span>
               </div>
-              
+
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Precio por minuto:</span>
+                <span className="text-sm text-gray-600">
+                  Precio por minuto:
+                </span>
                 <span className="text-sm font-medium text-gray-900">
                   ${PRICE_PER_MINUTE.toLocaleString()} COP
                 </span>
               </div>
-              
+
               <div className="border-t border-[#009ee333] pt-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-base font-semibold text-gray-700">Total a pagar:</span>
+                  <span className="text-base font-semibold text-gray-700">
+                    Total a pagar:
+                  </span>
                   <span className="text-lg font-bold text-[#009ee3]">
                     ${totalAmount.toLocaleString()} COP
                   </span>
@@ -193,7 +196,8 @@ const RechargePopup = ({ isOpen, onClose }) => {
                 />
               </svg>
               <span className="text-sm text-gray-600">
-                Pago seguro procesado por <span className="font-medium text-[#009ee3]">Wompi</span>
+                Pago seguro procesado por{" "}
+                <span className="font-medium text-[#009ee3]">Wompi</span>
               </span>
             </div>
           </div>
@@ -208,6 +212,18 @@ const RechargePopup = ({ isOpen, onClose }) => {
             >
               Cancelar
             </button>
+            <WompiPaymentButton
+            // onPaymentClick={handleWompiPaymentClick}
+            // disabled={!shouldShowPayButton()}
+            />
+
+            <WompiWidget
+              paymentData={{
+                // priceCOPCents: paymentCalculations.priceCOPCents,
+                // reference: paymentCalculations.reference,
+              }}
+              shouldUpdate={true}
+            />
             <button
               type="submit"
               disabled={loading || minutes === 0}
