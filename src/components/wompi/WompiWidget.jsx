@@ -1,72 +1,173 @@
-import { useEffect, useRef } from "react";
-import PropTypes from "prop-types";
-import { wompiService } from "../../../services/payments/wompi/wompiService";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { wompiService } from "../../services/wompi/wompiService";
 
 const WompiWidget = ({
-  paymentData,
+  amountCOP,
   isVisible,
   onWidgetReady,
-  shouldUpdate = false,
+  onPaymentError,
+  description = "Recarga de minutos",
 }) => {
   const containerRef = useRef(null);
-  const hasInitialized = useRef(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [currentAmount, setCurrentAmount] = useState(null);
+  const debounceTimeoutRef = useRef(null);
+  const isInitializingRef = useRef(false);
 
-  useEffect(() => {
-    const initializeWidget = async () => {
-      if (!containerRef.current || !isVisible || !paymentData) return;
+  const handleWidgetReady = useCallback(
+    (success, reference) => {
+      console.log("Widget ready:", { success, reference });
+      onWidgetReady?.(success, reference);
+    },
+    [onWidgetReady]
+  );
 
-      // Solo inicializar si es necesario
-      if (!shouldUpdate && hasInitialized.current) return;
+  const handlePaymentError = useCallback(
+    (errorMessage) => {
+      console.error("Payment error:", errorMessage);
+      onPaymentError?.(errorMessage);
+    },
+    [onPaymentError]
+  );
+
+  const createWidget = useCallback(
+    async (amount) => {
+      if (
+        !containerRef.current ||
+        !isVisible ||
+        !amount ||
+        amount <= 0 ||
+        isInitializingRef.current
+      ) {
+        return;
+      }
+
+      isInitializingRef.current = true;
+      setIsLoading(true);
+      setError(null);
 
       try {
+        containerRef.current.innerHTML = "";
+
+        // Remover scripts existentes de forma optimizada
+        const existingScripts = document.querySelectorAll(
+          'script[src*="widget.js"]'
+        );
+        existingScripts.forEach((script) => script.remove());
+
+        // Crear datos de pago
+        const paymentData = await wompiService.createPaymentData(
+          amount,
+          description
+        );
+
+        // Crear widget
         const success = await wompiService.createPaymentWidget(
           containerRef.current,
           paymentData
         );
 
         if (success) {
-          hasInitialized.current = true;
-          onWidgetReady?.(true);
+          setCurrentAmount(amount);
+          handleWidgetReady(true, paymentData.reference);
         } else {
-          onWidgetReady?.(false);
+          throw new Error("Error al crear el widget de pago");
         }
       } catch (error) {
-        console.error("Error al inicializar widget de Wompi:", error);
-        onWidgetReady?.(false);
+        console.error("Error al crear widget:", error);
+        setError(error.message);
+        handleWidgetReady(false);
+        handlePaymentError(error.message);
+      } finally {
+        setIsLoading(false);
+        isInitializingRef.current = false;
+      }
+    },
+    [isVisible, description, handleWidgetReady, handlePaymentError]
+  );
+
+  // Effect con debounce
+  useEffect(() => {
+    if (!isVisible || !amountCOP || amountCOP <= 0) {
+      return;
+    }
+
+    // Si es el mismo monto, no hacer nada
+    if (currentAmount === amountCOP) {
+      return;
+    }
+
+    // Limpiar timeout anterior
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Crear nuevo timeout con debounce
+    debounceTimeoutRef.current = setTimeout(() => {
+      createWidget(amountCOP);
+    }, 150);
+
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
       }
     };
+  }, [amountCOP, isVisible, currentAmount, createWidget]);
 
-    initializeWidget();
-  }, [paymentData, isVisible, shouldUpdate, onWidgetReady]);
-
-  // Reset cuando se oculta el widget
+  // Effect para limpiar cuando se oculta el widget
   useEffect(() => {
     if (!isVisible) {
-      hasInitialized.current = false;
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+      wompiService.cleanup();
+      setError(null);
+      setIsLoading(false);
+      setCurrentAmount(null);
+      isInitializingRef.current = false;
     }
   }, [isVisible]);
 
-  return (
-    <div
-      ref={containerRef}
-      id="wompi-button-container"
-      style={{
-        display: isVisible ? "block" : "none",
-        visibility: isVisible ? "visible" : "hidden",
-        minHeight: isVisible ? "50px" : "0",
-      }}
-    />
-  );
-};
+  // Effect para cleanup al desmontar
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+      wompiService.cleanup();
+      isInitializingRef.current = false;
+    };
+  }, []);
 
-WompiWidget.propTypes = {
-  paymentData: PropTypes.shape({
-    priceCOPCents: PropTypes.number.isRequired,
-    reference: PropTypes.string.isRequired,
-  }),
-  isVisible: PropTypes.bool.isRequired,
-  onWidgetReady: PropTypes.func,
-  shouldUpdate: PropTypes.bool,
+  if (!isVisible) {
+    return null;
+  }
+
+  return (
+    <div className="wompi-widget-container">
+      {/* Mostrar estado de loading */}
+      {isLoading && (
+        <div className="flex items-center justify-center bg-[#009ee3] text-white rounded-lg p-2.5">
+          <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent mr-2"></div>
+          <span className="text-sm font-medium">Cargando...</span>
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && !isLoading && (
+        <div className="text-xs text-red-600 text-center p-2">{error}</div>
+      )}
+
+      {/* Widget container */}
+      <div
+        ref={containerRef}
+        className={`wompi-widget-inline ${error ? "hidden" : ""} ${
+          isLoading ? "hidden" : ""
+        }`}
+      />
+    </div>
+  );
 };
 
 export default WompiWidget;

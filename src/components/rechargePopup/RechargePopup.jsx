@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import WompiWidget from "../wompi/WompiWidget";
+import { PRICE_PER_MINUTE } from "../../utils/constants";
 
 const RechargePopup = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -6,17 +8,12 @@ const RechargePopup = ({ isOpen, onClose }) => {
     promo_code: "",
   });
 
-  const [loading, setLoading] = useState(false);
-
-  // Constantes
-  const PRICE_PER_MINUTE = 1000;
-  const WORKSPACE_ID = 192535;
-  const CURRENCY = "COP";
-  const METHOD = "wompi";
+  const [showWompiWidget, setShowWompiWidget] = useState(false);
+  const [paymentReference, setPaymentReference] = useState(null);
+  const [widgetError, setWidgetError] = useState(null);
 
   // Cálculos
   const minutes = parseInt(formData.minutes) || 0;
-  const seconds = minutes * 60;
   const totalAmount = minutes * PRICE_PER_MINUTE;
 
   const handleInputChange = (e) => {
@@ -25,38 +22,56 @@ const RechargePopup = ({ isOpen, onClose }) => {
       ...prev,
       [name]: value,
     }));
+
+    // Ocultar widget si cambia la cantidad
+    if (name === "minutes") {
+      setShowWompiWidget(false);
+      setPaymentReference(null);
+      setWidgetError(null);
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleShowPayment = useCallback(() => {
+    console.log("Mostrando widget de pago para:", { minutes, totalAmount });
 
-    try {
-      const dataToSend = {
-        workspace_id: WORKSPACE_ID,
-        seconds_amount: seconds,
-        amount: totalAmount,
-        currency: CURRENCY,
-        method: METHOD,
-        promo_code: formData.promo_code || undefined,
-      };
-
-      console.log("Datos de recarga:", dataToSend);
-
-      // Simular delay de la API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      onClose();
-
-      // Reset form
-      setFormData({
-        minutes: "1",
-        promo_code: "",
-      });
-    } catch (error) {
-      console.error("Error al recargar minutos:", error);
-    } finally {
-      setLoading(false);
+    if (minutes > 0) {
+      setWidgetError(null);
+      setPaymentReference(null);
+      setShowWompiWidget(true);
+    } else {
+      alert("Por favor, selecciona una cantidad válida de minutos");
     }
+  }, [minutes, totalAmount]);
+
+  const handleWompiWidgetReady = useCallback((success, reference) => {
+    console.log("Widget ready callback:", { success, reference });
+
+    if (success) {
+      setPaymentReference(reference);
+      setWidgetError(null);
+    } else {
+      console.error("Error al cargar el widget de Wompi");
+      setWidgetError("No se pudo cargar el método de pago");
+      setShowWompiWidget(false);
+    }
+  }, []);
+
+  const handlePaymentError = useCallback((error) => {
+    console.error("Error en el pago:", error);
+    setWidgetError(error);
+    setShowWompiWidget(false);
+    alert("Error al procesar el pago. Por favor, intenta nuevamente.");
+  }, []);
+
+  const handleClose = () => {
+    setShowWompiWidget(false);
+    setPaymentReference(null);
+    setWidgetError(null);
+    setFormData({
+      minutes: "1",
+      promo_code: "",
+    });
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -69,10 +84,14 @@ const RechargePopup = ({ isOpen, onClose }) => {
         backdropFilter: "blur(2px)",
         WebkitBackdropFilter: "blur(2px)",
       }}
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
+      }}
     >
       <div
-        className="w-full max-w-md mx-auto bg-white p-6 rounded-2xl  shadow-lg"
+        className="w-full max-w-md mx-auto bg-white p-6 rounded-2xl shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -80,7 +99,7 @@ const RechargePopup = ({ isOpen, onClose }) => {
           <h2 className="text-xl font-bold text-gray-600">Recargar minutos</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
           >
             <svg
@@ -99,8 +118,7 @@ const RechargePopup = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
           {/* Cantidad de minutos */}
           <div>
             <label
@@ -119,6 +137,7 @@ const RechargePopup = ({ isOpen, onClose }) => {
               placeholder="Ej: 30"
               required
               min="1"
+              disabled={showWompiWidget}
             />
           </div>
 
@@ -176,89 +195,104 @@ const RechargePopup = ({ isOpen, onClose }) => {
               onChange={handleInputChange}
               className="bg-[#edf4ff] border border-[#009ee333] text-gray-900 text-sm rounded-lg focus:outline-none focus:border-[#009ee3] focus:ring-2 focus:ring-[#009ee3]/20 transition-all duration-200 block w-full p-2.5"
               placeholder="Ingresa tu código"
+              disabled={showWompiWidget}
             />
           </div>
 
           {/* Método de pago info */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <div className="flex items-center space-x-2">
-              <svg
-                className="w-5 h-5 text-[#009ee3]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                />
-              </svg>
-              <span className="text-sm text-gray-600">
-                Pago seguro procesado por{" "}
-                <span className="font-medium text-[#009ee3]">Wompi</span>
-              </span>
+          {!showWompiWidget && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <div className="flex items-center space-x-2">
+                <svg
+                  className="w-5 h-5 text-[#009ee3]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                  />
+                </svg>
+                <span className="text-sm text-gray-600">
+                  Pago seguro procesado por{" "}
+                  <span className="font-medium text-[#009ee3]">Wompi</span>
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Botones */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200"
-              disabled={loading}
             >
               Cancelar
             </button>
-            <WompiPaymentButton
-            // onPaymentClick={handleWompiPaymentClick}
-            // disabled={!shouldShowPayButton()}
-            />
 
-            <WompiWidget
-              paymentData={{
-                // priceCOPCents: paymentCalculations.priceCOPCents,
-                // reference: paymentCalculations.reference,
-              }}
-              shouldUpdate={true}
-            />
-            <button
-              type="submit"
-              disabled={loading || minutes === 0}
-              className="flex-1 text-white bg-[#009ee3] hover:bg-[#007bb8] focus:ring-2 focus:ring-[#009ee3]/50 focus:outline-none active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed font-medium rounded-lg text-sm px-4 py-2.5 text-center transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center"
-            >
-              {loading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Procesando...
-                </>
-              ) : (
-                `Pagar $${totalAmount.toLocaleString()} COP`
-              )}
-            </button>
+            {!showWompiWidget && (
+              <button
+                type="button"
+                onClick={handleShowPayment}
+                disabled={minutes === 0}
+                className="flex-1 text-white bg-[#009ee3] hover:bg-[#007bb8] focus:ring-2 focus:ring-[#009ee3]/50 focus:outline-none active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed font-medium rounded-lg text-sm px-4 py-2.5 text-center transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                Continuar con el pago
+              </button>
+            )}
+            {showWompiWidget && (
+              <div>
+                {/* Error del widget */}
+                {widgetError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                    <div className="flex">
+                      <svg
+                        className="w-5 h-5 text-red-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <div className="ml-2">
+                        <p className="text-sm text-red-800">
+                          Error al cargar el método de pago
+                        </p>
+                        <p className="text-xs text-red-600 mt-1">
+                          {widgetError}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <WompiWidget
+                  amountCOP={totalAmount}
+                  isVisible={true}
+                  onWidgetReady={handleWompiWidgetReady}
+                  onPaymentError={handlePaymentError}
+                  description={`Recarga de ${minutes} minutos`}
+                />
+              </div>
+            )}
           </div>
-        </form>
+
+          {/* Información adicional */}
+          {paymentReference && (
+            <div className="text-xs text-gray-500 text-center pt-2 border-t border-gray-200">
+              Referencia: {paymentReference}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
