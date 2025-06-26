@@ -1,6 +1,13 @@
+import { Navigate, useNavigate } from "react-router";
 import chateaLogo from "../../../assets/chatea.png";
 
 const Login = () => {
+  const navigate = useNavigate();
+
+  const dashboardRedirect = () => {
+    navigate("/dashboard");
+  };
+
   return (
     <main className="flex flex-col w-full items-center justify-center min-h-screen bg-[#e4e9f7] px-4 sm:px-6 lg:px-8">
       <figure className="mb-6 sm:mb-7">
@@ -50,6 +57,7 @@ const Login = () => {
 
         <button
           type="submit"
+          onClick={() => dashboardRedirect()}
           className="text-white bg-[#009ee3] hover:bg-[#007bb8] focus:ring-2 focus:ring-[#009ee3]/50 focus:outline-none active:scale-[0.98] cursor-pointer font-medium rounded-lg text-sm w-full mb-4 sm:mb-5 px-5 py-2.5 text-center transition-all duration-200 shadow-md hover:shadow-lg"
         >
           Iniciar sesión
