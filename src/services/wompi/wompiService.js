@@ -4,6 +4,7 @@ import {
   generateTransactionReference,
   convertCOPToCents,
   validateWompiConfig,
+  getWorkspaceId,
 } from "./wompiHelper";
 
 export class WompiService {
@@ -15,24 +16,41 @@ export class WompiService {
   /**
    * Crea los datos de pago necesarios para Wompi
    * @param {number} amountCOP - Monto en pesos colombianos
+   * @param {number} minutes - Cantidad de minutos a recargar
    * @param {string} description - Descripción del pago
    * @returns {Promise<Object>} - Datos de pago para Wompi
    */
-  async createPaymentData(amountCOP, description = "Recarga de minutos") {
+  async createPaymentData(
+    amountCOP,
+    minutes,
+    description = "Recarga de minutos"
+  ) {
     try {
       if (!validateWompiConfig()) {
         throw new Error("Configuración de Wompi inválida");
       }
 
-      const reference = generateTransactionReference("RECARGA_MINUTOS");
+      // Validar parámetros
+      if (!amountCOP || amountCOP <= 0) {
+        throw new Error("El monto debe ser mayor a 0");
+      }
+
+      if (!minutes || minutes <= 0) {
+        throw new Error("La cantidad de minutos debe ser mayor a 0");
+      }
+
+      const workspaceId = getWorkspaceId();
+      const reference = generateTransactionReference(workspaceId, minutes);
       const amountInCents = convertCOPToCents(amountCOP);
       const currency = WOMPI_CONFIG.CURRENCY;
 
       console.log("Creando datos de pago:", {
         reference,
         amountCOP,
+        minutes,
         amountInCents,
         currency,
+        workspaceId,
       });
 
       const signature = await generateIntegritySignature(
@@ -50,6 +68,7 @@ export class WompiService {
       return {
         reference,
         amountCOP,
+        minutes,
         amountInCents,
         currency,
         signature,
@@ -79,7 +98,7 @@ export class WompiService {
       this.removeExistingScripts();
 
       const baseUrl = window.location.origin;
-      const redirectUrl = `${baseUrl}/dashboard`;
+      const redirectUrl = `${baseUrl}/transaction-summary`;
 
       const script = this.createWompiScript({
         ...paymentData,

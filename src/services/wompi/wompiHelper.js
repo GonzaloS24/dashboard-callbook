@@ -53,14 +53,54 @@ export async function generateIntegritySignature(
 }
 
 /**
- * Genera una referencia única para la transacción
- * @param {string} prefix - Prefijo para la referencia
- * @returns {string} - Referencia única
+ * Genera una referencia detallada para la transacción
+ * @param {string} workspaceId - ID del workspace
+ * @param {number} minutes - Cantidad de minutos a recargar
+ * @returns {string} - Referencia estructurada
  */
-export function generateTransactionReference(prefix = "RECARGA") {
+export function generateTransactionReference(workspaceId, minutes) {
+  if (!workspaceId) {
+    throw new Error("workspaceId es requerido para generar la referencia");
+  }
+
+  if (!minutes || minutes <= 0) {
+    throw new Error("minutes debe ser un número positivo");
+  }
+
   const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `${prefix}_${timestamp}_${random}`;
+
+  return `workspace_id=${workspaceId}-minutes=${minutes}-timestamp=${timestamp}-type=RECARGA_MINUTOS`;
+}
+
+/**
+ * Parsea una referencia estructurada y extrae sus componentes
+ * @param {string} reference - Referencia a parsear
+ * @returns {Object} - Objeto con los componentes de la referencia
+ */
+export function parseTransactionReference(reference) {
+  try {
+    const result = {};
+    const parts = reference.split("-");
+
+    for (const part of parts) {
+      if (part.includes("=")) {
+        const [key, value] = part.split("=");
+        if (key && value) {
+          // Convertir valores numéricos
+          if (key === "minutes" || key === "timestamp") {
+            result[key] = parseInt(value, 10);
+          } else {
+            result[key] = value;
+          }
+        }
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error parseando referencia:", error);
+    return {};
+  }
 }
 
 /**
@@ -78,4 +118,13 @@ export function convertCOPToCents(amountCOP) {
  */
 export function validateWompiConfig() {
   return !!(WOMPI_CONFIG.PUBLIC_KEY && WOMPI_CONFIG.INTEGRITY_SECRET);
+}
+
+/**
+ * Obtiene el workspace ID
+ * @returns {string} - Workspace ID
+ */
+export function getWorkspaceId() {
+  // workspace id de ejemplo
+  return "66666";
 }

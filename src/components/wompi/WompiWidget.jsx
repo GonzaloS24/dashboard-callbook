@@ -3,6 +3,7 @@ import { wompiService } from "../../services/wompi/wompiService";
 
 const WompiWidget = ({
   amountCOP,
+  minutes,
   isVisible,
   onWidgetReady,
   onPaymentError,
@@ -12,6 +13,7 @@ const WompiWidget = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentAmount, setCurrentAmount] = useState(null);
+  const [currentMinutes, setCurrentMinutes] = useState(null);
   const debounceTimeoutRef = useRef(null);
   const isInitializingRef = useRef(false);
 
@@ -32,12 +34,14 @@ const WompiWidget = ({
   );
 
   const createWidget = useCallback(
-    async (amount) => {
+    async (amount, minutesToRecharge) => {
       if (
         !containerRef.current ||
         !isVisible ||
         !amount ||
         amount <= 0 ||
+        !minutesToRecharge ||
+        minutesToRecharge <= 0 ||
         isInitializingRef.current
       ) {
         return;
@@ -56,9 +60,10 @@ const WompiWidget = ({
         );
         existingScripts.forEach((script) => script.remove());
 
-        // Crear datos de pago
+        // Crear datos de pago con la nueva estructura de referencia
         const paymentData = await wompiService.createPaymentData(
           amount,
+          minutesToRecharge,
           description
         );
 
@@ -70,6 +75,7 @@ const WompiWidget = ({
 
         if (success) {
           setCurrentAmount(amount);
+          setCurrentMinutes(minutesToRecharge);
           handleWidgetReady(true, paymentData.reference);
         } else {
           throw new Error("Error al crear el widget de pago");
@@ -89,12 +95,18 @@ const WompiWidget = ({
 
   // Effect con debounce
   useEffect(() => {
-    if (!isVisible || !amountCOP || amountCOP <= 0) {
+    if (
+      !isVisible ||
+      !amountCOP ||
+      amountCOP <= 0 ||
+      !minutes ||
+      minutes <= 0
+    ) {
       return;
     }
 
-    // Si es el mismo monto, no hacer nada
-    if (currentAmount === amountCOP) {
+    // Si son los mismos datos, no hacer nada
+    if (currentAmount === amountCOP && currentMinutes === minutes) {
       return;
     }
 
@@ -105,7 +117,7 @@ const WompiWidget = ({
 
     // Crear nuevo timeout con debounce
     debounceTimeoutRef.current = setTimeout(() => {
-      createWidget(amountCOP);
+      createWidget(amountCOP, minutes);
     }, 150);
 
     return () => {
@@ -113,7 +125,14 @@ const WompiWidget = ({
         clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [amountCOP, isVisible, currentAmount, createWidget]);
+  }, [
+    amountCOP,
+    minutes,
+    isVisible,
+    currentAmount,
+    currentMinutes,
+    createWidget,
+  ]);
 
   // Effect para limpiar cuando se oculta el widget
   useEffect(() => {
@@ -125,6 +144,7 @@ const WompiWidget = ({
       setError(null);
       setIsLoading(false);
       setCurrentAmount(null);
+      setCurrentMinutes(null);
       isInitializingRef.current = false;
     }
   }, [isVisible]);

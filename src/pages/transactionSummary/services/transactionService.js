@@ -81,21 +81,42 @@ export const transactionService = {
   parseReferenceString(reference) {
     try {
       const result = {};
-      const parts = reference.split("-");
 
-      for (const part of parts) {
-        if (part.includes("=")) {
-          const [key, value] = part.split("=");
-          if (key && value) {
-            result[key] = value;
+      if (
+        reference.includes("workspace_id=") &&
+        reference.includes("minutes=")
+      ) {
+        const parts = reference.split("-");
+
+        for (const part of parts) {
+          if (part.includes("=")) {
+            const [key, value] = part.split("=");
+            if (key && value) {
+              // Convertir valores numéricos
+              if (key === "minutes" || key === "timestamp") {
+                result[key] = parseInt(value, 10);
+              } else {
+                result[key] = value;
+              }
+            }
           }
         }
+      } else {
+        result.workspace_id = "LEGACY";
+        result.minutes = 0;
+        result.type = "UNKNOWN";
+        result.timestamp = Date.now();
       }
 
       return result;
     } catch (e) {
       console.error("Error parsing reference:", e);
-      return {};
+      return {
+        workspace_id: "ERROR",
+        minutes: 0,
+        type: "ERROR",
+        timestamp: Date.now(),
+      };
     }
   },
 

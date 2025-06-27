@@ -43,7 +43,7 @@ export const TransactionHeader = ({ transactionData }) => {
   const isPending = transactionData?.status === "PENDING";
 
   return (
-    <div className="text-center mb-4">
+    <div className="text-center mb-4 p-4">
       {isSuccessful ? (
         <>
           <div className="success-icon-container">

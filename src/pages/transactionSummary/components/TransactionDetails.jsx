@@ -1,5 +1,6 @@
+import { PRICE_PER_MINUTE } from "../../../utils/constants";
+
 export const TransactionDetails = ({ transactionData, onPrint }) => {
-    
   const isSuccessful = transactionData?.status === "APPROVED";
   const isPending = transactionData?.status === "PENDING";
 
@@ -10,7 +11,7 @@ export const TransactionDetails = ({ transactionData, onPrint }) => {
 
   return (
     <div
-      className="transaction-details bg"
+      className="transaction-details p-4"
       data-print-date={getCurrentDateFormatted()}
     >
       <h4 className="details-title">Detalles de la compra</h4>
@@ -101,10 +102,7 @@ export const TransactionDetails = ({ transactionData, onPrint }) => {
 
         <div className="transaction-info-item">
           <div className="info-label">Precio por Minuto</div>
-          <div className="info-value">
-            ${(transactionData.amountUSD / transactionData.minutes).toFixed(4)}{" "}
-            USD
-          </div>
+          <div className="info-value">${PRICE_PER_MINUTE.toLocaleString()}</div>
         </div>
       </div>
 

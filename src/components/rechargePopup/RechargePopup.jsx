@@ -201,7 +201,7 @@ const RechargePopup = ({ isOpen, onClose }) => {
 
           {/* Método de pago info */}
           {!showWompiWidget && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className=" rounded-lg px-3">
               <div className="flex items-center space-x-2">
                 <svg
                   className="w-5 h-5 text-[#009ee3]"
@@ -244,6 +244,7 @@ const RechargePopup = ({ isOpen, onClose }) => {
                 Continuar con el pago
               </button>
             )}
+            {/* Widget de Wompi */}
             {showWompiWidget && (
               <div>
                 {/* Error del widget */}
@@ -277,6 +278,7 @@ const RechargePopup = ({ isOpen, onClose }) => {
 
                 <WompiWidget
                   amountCOP={totalAmount}
+                  minutes={minutes}
                   isVisible={true}
                   onWidgetReady={handleWompiWidgetReady}
                   onPaymentError={handlePaymentError}
