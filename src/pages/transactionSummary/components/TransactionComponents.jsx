@@ -1,0 +1,88 @@
+import { PuffLoader } from "react-spinners";
+
+export const LoadingState = ({ pollingCount }) => (
+  <div className="loader-container">
+    <PuffLoader
+      color="#009ee3"
+      loading={true}
+      size={60}
+      margin={2}
+      speedMultiplier={4}
+    />
+    {pollingCount > 0 && (
+      <p className="polling-message">
+        Verificando el estado de tu pago...
+        {pollingCount > 5 && " Esto puede tomar unos momentos."}
+      </p>
+    )}
+  </div>
+);
+
+export const ErrorState = () => (
+  <div className="confirmation-card p-4 bg-white rounded">
+    <div className="error-icon-container">
+      <i className="bx bx-error-circle error-icon"></i>
+    </div>
+    <h2 className="text-center">Información No Disponible</h2>
+    <p className="text-center text-muted">
+      No se pudieron obtener los detalles de la transacción
+    </p>
+    <div className="text-center mt-4">
+      <button
+        className="btn-primary"
+        onClick={() => (window.location.href = "/")}
+      >
+        Volver al inicio
+      </button>
+    </div>
+  </div>
+);
+
+export const TransactionHeader = ({ transactionData }) => {
+  const isSuccessful = transactionData?.status === "APPROVED";
+  const isPending = transactionData?.status === "PENDING";
+
+  return (
+    <div className="text-center mb-4">
+      {isSuccessful ? (
+        <>
+          <div className="success-icon-container">
+            <i className="bx bx-check-circle success-icon"></i>
+          </div>
+          <h2 className="confirmation-title">
+            {transactionData.statusMessage}
+          </h2>
+          <p className="text-muted">
+            Tu compra de minutos ha sido procesada correctamente
+          </p>
+        </>
+      ) : isPending ? (
+        <>
+          <div className="pending-icon-container">
+            <i className="bx bx-time pending-icon"></i>
+          </div>
+          <h2 className="confirmation-title pending-title">
+            {transactionData.statusMessage}
+          </h2>
+          <p className="text-muted">
+            Tu pago está siendo procesado. Esto puede tomar unos minutos.
+          </p>
+          <p className="refresh-hint">
+            <i className="bx bx-refresh"></i> Puedes actualizar esta página en
+            unos momentos para ver el estado actualizado.
+          </p>
+        </>
+      ) : (
+        <>
+          <div className="error-icon-container">
+            <i className="bx bx-x-circle error-icon"></i>
+          </div>
+          <h2 className="confirmation-title">
+            {transactionData.statusMessage}
+          </h2>
+          <p className="text-muted">Hubo un problema con tu pago</p>
+        </>
+      )}
+    </div>
+  );
+};
